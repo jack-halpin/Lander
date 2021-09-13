@@ -18,7 +18,7 @@ class QuadRenderer
 
 public:
 	QuadRenderer(Shader *pShader);
-	void Render(float x, float y, float height, float width, float rotation, glm::vec3 colour);
+	void Render(float x, float y, float height, float width, float rotation, glm::vec3 colour, bool inPlace = true);
 	void Initialize();
 	void SetSize(int x, int y);
 

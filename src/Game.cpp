@@ -25,7 +25,7 @@ void Game::Initialize()
 	// Setup Triangle Renderer
 
 	//TODO: Set relative paths here
-	s = new Shader("C:/Users/Jack/Documents/code/lander/src/shaders/triangle_vertex.vs", "C:/Users/Jack/Documents/code/lander/src/shaders/triangle_fragment.fs");
+	s = new Shader("../../src/shaders/triangle_vertex.vs", "../../src/shaders/triangle_fragment.fs");
 	m_pRenderer = new TriangleRenderer(s);
 	m_pRenderer->Initialize();
 	m_pRenderer->SetSize(m_width, m_height);

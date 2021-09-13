@@ -11,15 +11,22 @@ TriangleRenderer::TriangleRenderer(Shader *pShader)
 
 
 
-void TriangleRenderer::Render(float x, float y, float height, float width, float rotation, glm::vec3 colour)
+void TriangleRenderer::Render(float x, float y, float height, float width, float rotation, glm::vec3 colour, bool bRotateInPlace)
 {
 	m_pShader->use();
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(x, y, 0.0f));
 
-	model = glm::translate(model, glm::vec3(0.5f * height, 0.5f * width, 0.0f));
-	model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f)); 
-	model = glm::translate(model, glm::vec3(-0.5f * height, -0.5f * width, 0.0f)); 
+	if (bRotateInPlace)
+	{
+		model = glm::translate(model, glm::vec3(0.5f * width, 0.5f * height, 0.0f)); // move origin of rotation to center of quad
+		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f)); // then rotate
+		model = glm::translate(model, glm::vec3(-0.5f * width, -0.5f * height, 0.0f)); // move origin back
+	}
+	else
+	{
+		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f)); // then rotate
+	}
 
 	model = glm::scale(model, glm::vec3(width, height, 1.0f));
 

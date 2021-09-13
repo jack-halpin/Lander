@@ -7,9 +7,9 @@
 #include "Ship.h"
 
 #define ROTATION_VELOCITY  60.0f
-#define THRUST_VELOCITY 0.3f
-#define GRAVITY 0.125f
-#define SHIP_SIZE 150.0f
+#define THRUST_VELOCITY 0.9f
+#define GRAVITY 0.6f
+#define SHIP_SIZE 50.0f
 
 Ship::Ship(Game *pGame, glm::vec2 initialPosition, TriangleRenderer *pRenderer, QuadRenderer *pQuadRenderer)
 	: m_pGame(pGame)
@@ -45,68 +45,66 @@ void Ship::Update(float dt)
 		m_velocity.y -= glm::sin(glm::radians(90.0f + m_rotation)) * (THRUST_VELOCITY * dt);
 		
 		break;
+    default:
+        continue;
 	}
 
-	//m_position.x += m_velocity.x;
-	//m_position.y += m_velocity.y;
-	//if (m_position.y >= 600 - (SHIP_SIZE + 1))
-	//{
-	//	// This needs to be a proper collision check
-	//	m_state = State::Landed;
-	//	m_position.y = 600 - (SHIP_SIZE + 1);
-	//	m_velocity.x = 0.0f;
-	//	m_velocity.y = 0.0f;
-	//}
-	//
-
-	
-
+	m_position.x += m_velocity.x;
+	m_position.y += m_velocity.y;
+	if (m_position.y >= 600 - (SHIP_SIZE + 1))
+	{
+		// This needs to be a proper collision check
+		m_state = State::Landed;
+		m_position.y = 600 - (SHIP_SIZE + 1);
+		m_velocity.x = 0.0f;
+		m_velocity.y = 0.0f;
+	}
 }
 
 void Ship::Render()
 {
 	m_pRenderer->Render(m_position.x, m_position.y, SHIP_SIZE, SHIP_SIZE, m_rotation, glm::vec3(1.0f));
-	m_pQuadRenderer->Render(m_position.x, m_position.y, SHIP_SIZE, SHIP_SIZE, m_rotation, glm::vec3(1.0f));
 
 	glm::vec2 shipPosition = m_position;
-	if (m_state == State::Idle) {
+	if (m_state == State::Thrust) {
+        // NOTE: All this code is incredibly complicated and only written because
+        // I wanted to try understand the geometry a bit better. Easiest way would
+        // be to define the thrust vertices beforehand and just draw them with the
+        // same transformation
+        
+        
 		// Calculate position for small triangle
-		float flameSize = SHIP_SIZE / 2;
+		// Figure out where the top left point of the big triangle currently is
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(m_position.x, m_position.y, 0.0f));
+
+		model = glm::translate(model, glm::vec3(0.5f * SHIP_SIZE, 0.5f * SHIP_SIZE, 0.0f)); // move origin of rotation to center of quad
+		model = glm::rotate(model, glm::radians(m_rotation), glm::vec3(0.0f, 0.0f, 1.0f)); // then rotate
+		model = glm::translate(model, glm::vec3(-0.5f * SHIP_SIZE, -0.5f * SHIP_SIZE, 0.0f)); // move origin back
+		model = glm::scale(model, glm::vec3(SHIP_SIZE, SHIP_SIZE, 1.0f)); // last scale
+		glm::vec4 topLeft(0.0f, 0.0f, 0.0f, 1.0f);
+
+		// Transform the topLeft 
+		glm::vec4 newPoint = model * topLeft;
+
+		float flameSize = SHIP_SIZE * 0.75;
 		glm::vec4 flamePosition(shipPosition, 0.0f, 1.0f);
 
 		float cos = glm::cos(glm::radians(m_rotation));
 		float sin = glm::sin(glm::radians(m_rotation));
 
-		float dx = 0;
-		float dy = SHIP_SIZE;
+		float dx = (SHIP_SIZE - flameSize) / 2;
+		float dy = SHIP_SIZE + 1; // + 1 so the two triangles don't overlap
 
-
-		glm::mat4 model = glm::mat4(1.0f);
-
-#define SHIP_HALF SHIP_SIZE/2
-		model = glm::translate(model, glm::vec3(SHIP_HALF, 0.0f, 0.0f));
-		model = glm::translate(model, glm::vec3(m_position.x, m_position.y, 0.0f)); // first translate (transformations are: scale happens first, then rotation, and then final translation happens; reversed order)
-		model = glm::translate(model, glm::vec3(0.5f * SHIP_SIZE, 0.5f * SHIP_SIZE, 0.0f)); // move origin of rotation to center of quad
-		model = glm::rotate(model, glm::radians(m_rotation), glm::vec3(0.0f, 0.0f, 1.0f)); // then rotate
-		model = glm::translate(model, glm::vec3(-0.5f * SHIP_SIZE, -0.5f * SHIP_SIZE, 0.0f)); // move origin back
-		model = glm::scale(model, glm::vec3(SHIP_SIZE, SHIP_SIZE, 1.0f)); // last scale
-
-		model = glm::scale(model, glm::vec3(SHIP_SIZE, SHIP_SIZE, 1.0f)); // last scale
-
-		glm::vec4 point(0.0f, 0.0f, 0.f, 1.0f);
-		point = model * point;
-
-		std::cout << "Angle : " << m_rotation << std::endl;
-
-		std::cout << "Cos values: " << cos * dy << std::endl;
-		std::cout << "Sin values: " << sin * dx << std::endl;
-
-		flamePosition.x = cos * dx - sin * dy + point.x;
-		flamePosition.y = cos * dy + sin * dx + point.y;
-		
-		flamePosition = point;
-
-		m_pQuadRenderer->Render(flamePosition.x, flamePosition.y, SHIP_SIZE, SHIP_SIZE, m_rotation, glm::vec3(1.0f, 0.0f, 0.0f));
+        // Offset from big ship
+		flamePosition.x = cos * dx - sin * dy + newPoint.x;
+		flamePosition.y = cos * dy + sin * dx + newPoint.y;
+        
+        // Since it's rotated 180 about it's top left, need to add offset
+        flamePosition.x += cos * flameSize - sin * flameSize;
+        flamePosition.y += cos * flameSize + sin * flameSize;
+    
+		m_pRenderer->Render(flamePosition.x, flamePosition.y, flameSize, flameSize, 180.0f + m_rotation, glm::vec3(1.0f, 0.0f, 0.0f), false);
 	}
 }
 
