@@ -5,7 +5,7 @@
 #include <vector>
 
 
-class TriangleRenderer
+class LineRenderer
 {
 	struct VertexData
 	{
@@ -17,13 +17,14 @@ class TriangleRenderer
 	};
 
 public:
-	TriangleRenderer(Shader *pShader);
-	void Render(float x, float y, float height, float width, float rotation, glm::vec3 colour, bool bRotateInPlace = true);
+    LineRenderer(Shader *pShader);
+	void Flush();
 	void Initialize();
 	void SetSize(int x, int y);
+    void Add(glm::vec2 position, glm::vec3 colour);
 
 public:
 	unsigned int m_vao, m_vbo;
 	Shader *m_pShader;
-	std::vector<float> m_vertices;
+	std::vector<VertexData> m_vertices;
 };

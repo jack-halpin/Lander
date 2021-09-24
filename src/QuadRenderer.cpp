@@ -9,8 +9,6 @@ QuadRenderer::QuadRenderer(Shader *pShader)
 
 }
 
-
-
 void QuadRenderer::Render(float x, float y, float height, float width, float rotation, glm::vec3 colour, bool inPlace)
 {
 	m_pShader->use();
@@ -26,7 +24,6 @@ void QuadRenderer::Render(float x, float y, float height, float width, float rot
 	else
 	{
 		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f)); // then rotate
-
 	}
 	
 	model = glm::scale(model, glm::vec3(width, height, 1.0f)); // last scale
@@ -41,24 +38,6 @@ void QuadRenderer::Render(float x, float y, float height, float width, float rot
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
-
-	model = glm::mat4(1.0f);
-	model = glm::scale(model, glm::vec3(800, 600, 0.0f));
-	m_pShader->setMat4("transform", model);
-	m_pShader->setBool("uFull", true);
-
-
-	float newy;
-	newy = 600 - y;
-
-	float finaly = newy - height;
-
-	glm::vec4 expected(x, newy, x + width, newy - height);
-	m_pShader->setVec4("uExpected", expected);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	m_pShader->setBool("uFull", false);
-
 	glBindVertexArray(0);
 
 }
@@ -67,7 +46,7 @@ void QuadRenderer::SetSize(int x, int y)
 {
 	m_pShader->use();
 	glm::mat4 perspective = glm::ortho(0.0f, static_cast<float>(x),
-		static_cast<float>(y), 0.0f, -1.0f, 100.0f);
+		0.0f, static_cast<float>(y), -1.0f, 100.0f);
 	m_pShader->setMat4("perspective", perspective);
 
 }

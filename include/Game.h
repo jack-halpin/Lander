@@ -1,7 +1,10 @@
 #pragma once
 
+#include "Level.h"
+
 #include "TriangleRenderer.h"
 #include "QuadRenderer.h"
+#include "LineRenderer.h"
 
 class GameObject {
 public:
@@ -28,6 +31,9 @@ private:
 	float m_rotation;
 	TriangleRenderer *m_pRenderer = nullptr;
 	QuadRenderer *m_pQuadRenderer = nullptr;
-	Shader *s;
-	GameObject *m_pPlayer;
+	LineRenderer *m_pLineRenderer = nullptr;
+	Shader *m_pSimpleShader = nullptr;
+	Shader *m_pLineShader = nullptr;
+	GameObject *m_pPlayer = nullptr;
+	Level *m_pLevel = nullptr;
 };

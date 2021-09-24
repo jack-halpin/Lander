@@ -31,31 +31,24 @@ void Ship::Update(float dt)
 {
 	ProcessInput(dt);
 
-
-	
-
 	switch (m_state) 
 	{
 	case State::Idle:
-		m_velocity.y += (GRAVITY * dt);
+		m_velocity.y -= (GRAVITY * dt);
 		break;
 	case State::Thrust:
-		float val = glm::cos(90.0f);
-		m_velocity.x += glm::cos(glm::radians(90.0f - m_rotation)) * (THRUST_VELOCITY * dt);
-		m_velocity.y -= glm::sin(glm::radians(90.0f + m_rotation)) * (THRUST_VELOCITY * dt);
-		
+		m_velocity.x += glm::cos(glm::radians(90.0f + m_rotation)) * (THRUST_VELOCITY * dt);
+		m_velocity.y += glm::sin(glm::radians(90.0f + m_rotation)) * (THRUST_VELOCITY * dt);
 		break;
-    default:
-        continue;
 	}
 
 	m_position.x += m_velocity.x;
 	m_position.y += m_velocity.y;
-	if (m_position.y >= 600 - (SHIP_SIZE + 1))
+	if (m_position.y <= 1)
 	{
 		// This needs to be a proper collision check
 		m_state = State::Landed;
-		m_position.y = 600 - (SHIP_SIZE + 1);
+		m_position.y = 1.0f;
 		m_velocity.x = 0.0f;
 		m_velocity.y = 0.0f;
 	}
@@ -71,8 +64,8 @@ void Ship::Render()
         // I wanted to try understand the geometry a bit better. Easiest way would
         // be to define the thrust vertices beforehand and just draw them with the
         // same transformation
-        
-        
+
+
 		// Calculate position for small triangle
 		// Figure out where the top left point of the big triangle currently is
 		glm::mat4 model = glm::mat4(1.0f);
@@ -84,26 +77,26 @@ void Ship::Render()
 		model = glm::scale(model, glm::vec3(SHIP_SIZE, SHIP_SIZE, 1.0f)); // last scale
 		glm::vec4 topLeft(0.0f, 0.0f, 0.0f, 1.0f);
 
-		// Transform the topLeft 
+		// Transform the topLeft
 		glm::vec4 newPoint = model * topLeft;
 
 		float flameSize = SHIP_SIZE * 0.75;
 		glm::vec4 flamePosition(shipPosition, 0.0f, 1.0f);
-
+        
 		float cos = glm::cos(glm::radians(m_rotation));
 		float sin = glm::sin(glm::radians(m_rotation));
 
 		float dx = (SHIP_SIZE - flameSize) / 2;
-		float dy = SHIP_SIZE + 1; // + 1 so the two triangles don't overlap
+		float dy = -flameSize - 1; // + 1 so the two triangles don't overlap
 
         // Offset from big ship
 		flamePosition.x = cos * dx - sin * dy + newPoint.x;
 		flamePosition.y = cos * dy + sin * dx + newPoint.y;
-        
+
         // Since it's rotated 180 about it's top left, need to add offset
         flamePosition.x += cos * flameSize - sin * flameSize;
         flamePosition.y += cos * flameSize + sin * flameSize;
-    
+
 		m_pRenderer->Render(flamePosition.x, flamePosition.y, flameSize, flameSize, 180.0f + m_rotation, glm::vec3(1.0f, 0.0f, 0.0f), false);
 	}
 }
@@ -114,9 +107,9 @@ void Ship::ProcessInput(float dt)
 	if (m_state != State::Landed)
 	{
 		if (m_pGame->keys[GLFW_KEY_A])
-			m_rotation -= ROTATION_VELOCITY * dt;
-		if (m_pGame->keys[GLFW_KEY_D])
 			m_rotation += ROTATION_VELOCITY * dt;
+		if (m_pGame->keys[GLFW_KEY_D])
+			m_rotation -= ROTATION_VELOCITY * dt;
 	}
 	
 

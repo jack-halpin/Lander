@@ -45,8 +45,8 @@ void TriangleRenderer::Render(float x, float y, float height, float width, float
 void TriangleRenderer::SetSize(int x, int y)
 {
 	m_pShader->use();
-	glm::mat4 perspective = glm::ortho(0.0f, static_cast<float>(x),
-		static_cast<float>(y), 0.0f, -1.0f, 100.0f);
+    glm::mat4 perspective = glm::ortho(0.0f, static_cast<float>(x),
+        0.0f, static_cast<float>(y), -1.0f, 100.0f);
 	m_pShader->setMat4("perspective", perspective);
 
 }
@@ -54,13 +54,10 @@ void TriangleRenderer::SetSize(int x, int y)
 void TriangleRenderer::Initialize()
 {
 
-	
-
-
 	float vertices[] = {
-		0.0f, 1.0f, 0.0f, // left
-		0.5f, 0.0f, 0.0f, // right
-		1.0f, 1.0f, 0.0f  // top
+		0.0f, 0.0f, 0.0f, // left
+		0.5f, 1.0f, 0.0f, // right
+		1.0f, 0.0f, 0.0f  // top
 	};
 	GLenum test = glGetError();
 

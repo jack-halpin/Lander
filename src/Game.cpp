@@ -15,9 +15,13 @@ Game::Game(int width, int height)
 
 Game::~Game() 
 {
-	delete s;
+	delete m_pSimpleShader;
+	delete m_pLineShader;
 	delete m_pRenderer;
 	delete m_pPlayer;
+	delete m_pLevel;
+	delete m_pQuadRenderer;
+	delete m_pLineRenderer;
 };
 
 void Game::Initialize()
@@ -25,14 +29,22 @@ void Game::Initialize()
 	// Setup Triangle Renderer
 
 	//TODO: Set relative paths here
-	s = new Shader("../../src/shaders/triangle_vertex.vs", "../../src/shaders/triangle_fragment.fs");
-	m_pRenderer = new TriangleRenderer(s);
+	m_pSimpleShader = new Shader("../../src/shaders/triangle_vertex.vs", "../../src/shaders/triangle_fragment.fs");
+	m_pRenderer = new TriangleRenderer(m_pSimpleShader);
 	m_pRenderer->Initialize();
 	m_pRenderer->SetSize(m_width, m_height);
+    
+    m_pRenderer->Render(100, 100, 100, 100, 0.0f, glm::vec3(1.0f, 1.0f, 1.0f));
 
-	m_pQuadRenderer = new QuadRenderer(s);
+	m_pQuadRenderer = new QuadRenderer(m_pSimpleShader);
 	m_pQuadRenderer->Initialize();
 	m_pQuadRenderer->SetSize(m_width, m_height);
+
+    m_pLineShader = new Shader("../../src/shaders/line_vertex.vs", "../../src/shaders/line_fragment.fs");
+
+	m_pLineRenderer = new LineRenderer(m_pLineShader);
+	m_pLineRenderer->Initialize();
+	m_pLineRenderer->SetSize(m_width, m_height);
 
 	// Calculate center for triangle
 	float startX = (m_width / 2) - (SHIP_SIZE / 2);
@@ -41,13 +53,16 @@ void Game::Initialize()
 	m_pPlayer = new Ship(this, glm::vec2(startX, startY), m_pRenderer, m_pQuadRenderer);
 
 	// Load Level
-
+	m_pLevel = new Level("../../src/levels/level-1.txt", m_pLineRenderer);
+	m_pLevel->LoadLevel();
 
 	// Set default values
 }
 
 void Game::Update(float dt) 
 {
+    m_pLevel->Render();
+
 	m_pPlayer->Update(dt);
 	m_pPlayer->Render();
 }
