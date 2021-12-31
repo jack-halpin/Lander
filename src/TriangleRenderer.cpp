@@ -9,7 +9,29 @@ TriangleRenderer::TriangleRenderer(Shader *pShader)
 
 }
 
+void TriangleRenderer::Add(std::vector<VertexData> &data)
+{
+	for (auto&& d : data)
+	{
+		m_vertexData.push_back(d);
+	}
+}
 
+void TriangleRenderer::Render()
+{
+	GLenum test = glGetError();
+
+	m_pShader->use();
+	glBindVertexArray(m_vao);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, m_vertexData.size() * sizeof(VertexData), &m_vertexData[0]);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glBindVertexArray(0);
+
+	m_vertexData.clear();
+}
 
 void TriangleRenderer::Render(float x, float y, float height, float width, float rotation, glm::vec3 colour, bool bRotateInPlace)
 {
@@ -48,34 +70,34 @@ void TriangleRenderer::SetSize(int x, int y)
     glm::mat4 perspective = glm::ortho(0.0f, static_cast<float>(x),
         0.0f, static_cast<float>(y), -1.0f, 100.0f);
 	m_pShader->setMat4("perspective", perspective);
-
 }
 
 void TriangleRenderer::Initialize()
 {
-
-	float vertices[] = {
-		0.0f, 0.0f, 0.0f, // left
-		0.5f, 1.0f, 0.0f, // right
-		1.0f, 0.0f, 0.0f  // top
-	};
 	GLenum test = glGetError();
 
-	unsigned int m_vbo;
 	glGenVertexArrays(1, &m_vao);
 	glGenBuffers(1, &m_vbo);
 
 	glBindVertexArray(m_vao);
 
+	std::vector<VertexData> data{
+		{10.0f, 10.0f, 0.0f},
+		{50.0f, 100.0f, 0.0f },
+		{100.0f, 10.0f, 0.0f}
+	};
+
 	// Bind to the buffer. When we bind to the buffer, any future buffer manipulation calls
 	// we make will be done on the buffer we have bound to. NOTE: we can bind to one buffer of each type
 	// In this case we are using the GL_ARRAY_BUFFER type
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
+	glBufferData(GL_ARRAY_BUFFER, 1024 * sizeof(VertexData), nullptr, GL_DYNAMIC_DRAW);
+	test = glGetError();
 	// Now we tell OpenGL how to interpret the vertex data in this VBO
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	test = glGetError();
 

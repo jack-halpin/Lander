@@ -64,6 +64,11 @@ void Game::Update(float dt)
     m_pLevel->Render();
 
 	m_pPlayer->Update(dt);
+	
+	// Check collisions between new player position and level coordinates
+
+
+
 	m_pPlayer->Render();
 }
 

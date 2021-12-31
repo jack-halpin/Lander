@@ -39,12 +39,8 @@ void Level::LoadLevel()
                     {
                         break;
                     }
-
-                }
-                    
-                
+                }   
             }
-
             m_levelData.push_back(glm::vec2(x, y));
 		}
 	}

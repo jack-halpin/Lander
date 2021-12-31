@@ -1,8 +1,13 @@
 #pragma once
+#include "Types.h"
+
+#include <vector>
 
 
 class Ship : public GameObject
 {
+public:
+
 public:
 	enum class State
 	{
@@ -34,6 +39,8 @@ private:
 	QuadRenderer *m_pQuadRenderer = nullptr;
 	Game* m_pGame;
 	State m_state;
+	std::vector<VertexData> m_vertices;
 
+	
 	
 };
